@@ -2,7 +2,7 @@ language: go
 
 go:
   - 1.7
-  - top
+  - tip
 
 script:
-    - cd uint16s && go test
+    - cd uint16mm && go test

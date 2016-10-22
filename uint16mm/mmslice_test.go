@@ -1,16 +1,16 @@
-package uint16s_test
+package uint16mm_test
 
 import (
 	"os"
 	"testing"
 
-	"github.com/brentp/mmslice/uint16s"
+	"github.com/brentp/mmslice/uint16mm"
 	mmap "github.com/edsrzf/mmap-go"
 )
 
 func TestCreate(t *testing.T) {
 
-	f, err := uint16s.Create("/tmp/uint16s.bin", 2000)
+	f, err := uint16mm.Create("/tmp/uint16s.bin", 2000)
 	if err != nil {
 		t.Errorf("error creating file")
 	}
@@ -45,7 +45,7 @@ func TestCreate(t *testing.T) {
 		t.Errorf("error on opening: %s", err)
 	}
 
-	r, err := uint16s.Open(fh, mmap.RDONLY)
+	r, err := uint16mm.Open(fh, mmap.RDONLY)
 	if err != nil {
 		t.Errorf("error on opening: %s", err)
 	}

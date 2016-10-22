@@ -1,15 +1,17 @@
 mmslice
 =======
 
+[![Build Status](https://travis-ci.org/brentp/mmslice.svg?branch=master)](https://travis-ci.org/brentp/mmslice)
+
 mmslice makes it easy to mmap an slice of []uint16 to a file for
 reading and/or writing. It uses [this excellent library for mmap'ing](https://github.com/edsrzf/mmap-go).
 
 ```Go
 
-import "github.com/brentp/mmslice/uint16s"
+import "github.com/brentp/mmslice/uint16mm"
 
 // create a new file mapping 2000 uint16s
-f, _ := uint16s.Create("/tmp/t.bin", 2000)
+f, _ := uint16mm.Create("/tmp/t.bin", 2000)
 
 // The mapped data is in .A
 len(f.A) // 2000
@@ -31,7 +33,7 @@ To open for reading:
 
 ```Go
 
-f, _ := uint16s.Open("/tmp/t.bin", mmap.RDONLY)
+f, _ := uint16mm.Open("/tmp/t.bin", mmap.RDONLY)
 len(f.A) // 2000
 
 f.A[200] // 22
