@@ -1,5 +1,5 @@
-// Package marray makes it simple to map an array of integers to file.
-package marray
+// Package uint16s makes it simple to map a slice of integers to file.
+package uint16s
 
 import (
 	"encoding/binary"
@@ -15,15 +15,15 @@ type A []uint16
 
 const maxSize = 1<<31 - 1
 
-// Marray is acts like a slice of uint16.
-type Marray struct {
+// Uint16 acts like a slice of uint16.
+type Uint16 struct {
 	A
 	f   *os.File
 	Map mmap.MMap
 }
 
 // Close the underlying file-handle
-func (m *Marray) Close() error {
+func (m *Uint16) Close() error {
 	m.Map.Flush()
 	m.Map.Unmap()
 	m.A = nil
@@ -31,12 +31,12 @@ func (m *Marray) Close() error {
 }
 
 // Flush data to the map
-func (m *Marray) Flush() error {
+func (m *Uint16) Flush() error {
 	return m.Map.Flush()
 }
 
 // Open return s an Marray object given a file to map.
-func Open(f *os.File, mode int) (*Marray, error) {
+func Open(f *os.File, mode int) (*Uint16, error) {
 	var anon int
 	if f == nil {
 		anon = 1
@@ -51,11 +51,11 @@ func Open(f *os.File, mode int) (*Marray, error) {
 	}
 	sz := int64(unsafe.Sizeof(uint16(0)))
 	arr := (*[maxSize]uint16)(unsafe.Pointer(&b[0]))[:len/sz]
-	return &Marray{arr, f, b}, nil
+	return &Uint16{arr, f, b}, nil
 }
 
 // Create opens a new Marray for reading and writing.
-func Create(path string, length int64) (*Marray, error) {
+func Create(path string, length int64) (*Uint16, error) {
 	f, err := os.Create(path)
 	if err != nil {
 		return nil, err
