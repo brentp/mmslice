@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"os"
+	"syscall"
 	"unsafe"
 
 	mmap "github.com/edsrzf/mmap-go"
@@ -42,6 +43,7 @@ func Open(f *os.File, mode int) (*Slice, error) {
 		anon = 1
 	}
 	b, err := mmap.Map(f, mode, anon)
+	syscall.Madvise(b, syscall.MADV_SEQUENTIAL|syscall.MADV_WILLNEED)
 	if err != nil {
 		return nil, err
 	}
