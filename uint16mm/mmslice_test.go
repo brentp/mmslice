@@ -67,3 +67,17 @@ func TestCreate(t *testing.T) {
 	os.Remove("/tmp/uint16s.bin")
 
 }
+
+func TestAnonymous(t *testing.T) {
+
+	f, err := uint16mm.Open(nil, 2000)
+	if err != nil {
+		t.Errorf("error creating anonymous slice")
+	}
+	if len(f.A) != 2000 {
+		t.Fatalf("expected length 2000, got: %s")
+	}
+	if err := f.Close(); err != nil {
+		t.Fatal("error closing anonymous uint16mm")
+	}
+}

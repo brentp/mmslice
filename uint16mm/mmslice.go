@@ -14,7 +14,7 @@ import (
 // An A is the type mapped by this lib
 type A []uint16
 
-const maxSize = 1<<31 - 1
+const maxSize int64 = 1<<37 - 1
 
 // Slice holds uint16's backed by a mmap.
 type Slice struct {
@@ -28,6 +28,9 @@ func (m *Slice) Close() error {
 	m.Map.Flush()
 	m.Map.Unmap()
 	m.A = nil
+	if m.f == nil {
+		return nil
+	}
 	return m.f.Close()
 }
 
@@ -37,22 +40,31 @@ func (m *Slice) Flush() error {
 }
 
 // Open return s an Marray object given a file to map.
+// if f is nil then the 2nd argument is the size of an
+// anonymously mapped array.
 func Open(f *os.File, mode int) (*Slice, error) {
-	var anon int
-	if f == nil {
-		anon = 1
-	}
-	b, err := mmap.Map(f, mode, anon)
-	syscall.Madvise(b, syscall.MADV_SEQUENTIAL|syscall.MADV_WILLNEED)
-	if err != nil {
-		return nil, err
-	}
-	len, err := f.Seek(0, 2)
-	if err != nil {
-		return nil, err
-	}
+	var b mmap.MMap
+	var err error
+	var length int64
 	sz := int64(unsafe.Sizeof(uint16(0)))
-	arr := (*[maxSize]uint16)(unsafe.Pointer(&b[0]))[:len/sz]
+	if f == nil {
+		length = int64(mode) * int64(sz)
+		mode = mmap.RDWR
+		b, err = mmap.MapRegion(nil, int(length), mode, 1, 0)
+	} else {
+		b, err = mmap.Map(f, mode, 0)
+	}
+	if err != nil {
+		return nil, err
+	}
+	syscall.Madvise(b, syscall.MADV_SEQUENTIAL|syscall.MADV_WILLNEED)
+	if f != nil {
+		length, err = f.Seek(0, 2)
+		if err != nil {
+			return nil, err
+		}
+	}
+	arr := (*[maxSize]uint16)(unsafe.Pointer(&b[0]))[:length/sz]
 	return &Slice{arr, f, b}, nil
 }
 
@@ -66,7 +78,7 @@ func Create(path string, length int64) (*Slice, error) {
 	sizeInBytes := sz * length
 	if sizeInBytes > maxSize {
 		f.Close()
-		return nil, fmt.Errorf("length %d too big to map to %s", length, path)
+		return nil, fmt.Errorf("length %d too big to map to %s (max: %d)", length, path, maxSize/sz)
 	}
 	f.Seek(sizeInBytes-sz, 0)
 	err = binary.Write(f, binary.LittleEndian, uint16(0))
